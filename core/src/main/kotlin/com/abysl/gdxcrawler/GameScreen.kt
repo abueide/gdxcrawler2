@@ -1,34 +1,34 @@
 package com.abysl.gdxcrawler
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.Graphics
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.maps.tiled.TmxMapLoader
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer
 import ktx.assets.loadOnDemand
 import ktx.graphics.use
-import java.lang.Math.round
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class GameScreen : Screen {
     val batch: SpriteBatch = SpriteBatch()
-    val test: Sprite = Sprite(Texture("default.png"))
+    val tex = Texture("default.png")
+
+    //    val test: Sprite = Sprite(Texture("default.png"))
     val camera: OrthographicCamera = OrthographicCamera(20f, 11.25f)
     val assets = AssetManager().also { it.setLoader(TiledMap::class.java, TmxMapLoader()) }
     val map: TiledMap = assets.loadOnDemand<TiledMap>("Overworld.tmx").asset
     val mapRenderer = OrthogonalTiledMapRenderer(map, 1 / 16f)
+    var x = 21f
+    var y = 19f
     override fun show() {
-        test.setSize(1f, 1f)
-        test.setPosition(21f, 19f)
+//        test.setSize(1f, 1f)
+//        test.setPosition(21f, 19f)
         mapRenderer.unitScale
     }
 
@@ -36,20 +36,30 @@ class GameScreen : Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.projectionMatrix = camera.combined
         handleInput(delta)
-        camera.position.set(test.x, test.y, 0f)
+        camera.position.set(x, y, 0f)
         camera.update()
         mapRenderer.render()
         mapRenderer.setView(camera)
         batch.use {
-            test.draw(it)
+            it.draw(tex, x, y, 1f, 1f)
+        }
+        Gdx.app.postRunnable {
+            if (Gdx.graphics.width % 2 != 0) {
+                Gdx.graphics.setWindowedMode(Gdx.graphics.width - 1, Gdx.graphics.height)
+            }
+            if (Gdx.graphics.height % 2 != 0) {
+                Gdx.graphics.setWindowedMode(Gdx.graphics.width, Gdx.graphics.height - 1)
+            }
         }
     }
 
 
     // 1 size is 16 tiles
     val tileSize = 16.0
+
     // when 16:9 resolution, camera shows 20 tiles, otherwise show a bit more or less of the world
     val baseWidth = 20.0
+
     // when 16:9 resolution, camera shows 11.25 tiles, otherwise show a bit more or less of the world
     val baseHeight = 11.25
     override fun resize(width: Int, height: Int) {
@@ -83,19 +93,19 @@ class GameScreen : Screen {
         // Destroy screen's assets here.
     }
 
-    val speed = 0.1f
+    val speed = 1f
     private fun handleInput(delta: Float) {
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            test.setPosition(test.x, test.y + speed * delta)
+            y += speed * delta
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            test.setPosition(test.x - speed * delta, test.y)
+            x -= speed * delta
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            test.setPosition(test.x, test.y - speed * delta)
+            y -= speed * delta
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            test.setPosition(test.x + speed * delta, test.y)
+            x += speed * delta
         }
     }
 }
